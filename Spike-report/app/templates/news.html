@@ -1,0 +1,24 @@
+{# Наследуем base.html — берём его каркас и заполняем блоки #}
+{% extends "base.html" %}
+
+{% block content %}
+    {# Перебираем все новости которые передал контроллер #}
+    {% for item in news_list %}
+    <article class="tournament-article">
+        <h2>{{ item.title }}</h2>
+        <div class="match-result">
+            {% if item.image_path %}
+            <img src="{{ url_for('static', path=item.image_path) }}"
+                 alt="{{ item.title }}" class="match-image">
+            {% endif %}
+            <div class="match-info">
+                {# | e — экранирует HTML-спецсимволы, защита от XSS #}
+                <p>{{ item.content | e }}</p>
+            </div>
+        </div>
+    </article>
+    {% else %}
+    {# Это выполнится если news_list пустой #}
+    <p>Новостей пока нет.</p>
+    {% endfor %}
+{% endblock %}

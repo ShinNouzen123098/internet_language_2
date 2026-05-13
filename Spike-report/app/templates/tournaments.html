@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article class="tournament-article">
+    <h2>Кубок России</h2>
+    <div class="match-result">
+        <img src="{{ url_for('static', path='img/result.png') }}"
+             alt="Результат матча Кубка России" class="match-image">
+        <div class="match-info">
+            <h3>Финал Кубка России</h3>
+            <p>В захватывающем финальном матче Кубка России «Локомотив» одержал
+            историческую победу над «Динамо» со счётом 3:2.</p>
+        </div>
+    </div>
+</article>
+
+<article class="league-table">
+    <h2>Суперлига</h2>
+    <p class="table-description">Текущее положение команд в Суперлиге.</p>
+
+    {# Форма фильтрации — отправляет GET-запрос на тот же адрес #}
+    <form method="get" action="/tournaments" style="margin-bottom:15px;">
+        <input type="text" name="search" placeholder="Фильтр по команде"
+               value="{{ search or '' }}">
+        <button type="submit" class="submit-button">Найти</button>
+        {% if search %}
+        <a href="/tournaments" style="margin-left:10px;">Сбросить</a>
+        {% endif %}
+    </form>
+
+    <table class="standings-table">
+        <thead>
+            <tr>
+                <th>Позиция</th>
+                <th>Команда</th>
+                <th>Город</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for team in teams %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ team.name | e }}</td>
+                <td>{{ team.city | e }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">Команды не найдены</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+{% endblock %}

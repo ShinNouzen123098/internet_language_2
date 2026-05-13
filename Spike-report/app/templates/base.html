@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spike Report - Новости волейбола</title>
+    {# Подключаем стили. url_for генерирует правильный путь к файлу #}
+    <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}">
+    {# Блок для дополнительных скриптов — каждая страница может добавить своё #}
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="header">
+        <nav class="main-nav">
+            <div class="logo">
+                <h1>Spike Report - Новости волейбола</h1>
+                <p>Здесь будут публиковаться новости волейбола</p>
+            </div>
+            <ul class="nav-links">
+                {# request.url.path — текущий адрес страницы, чтобы подсветить активную ссылку #}
+                <li><a href="/news" {% if request.url.path == '/news' or request.url.path == '/' %}class="active"{% endif %}>Новости</a></li>
+                <li><a href="/tournaments" {% if request.url.path == '/tournaments' %}class="active"{% endif %}>Турниры</a></li>
+                <li><a href="/players" {% if request.url.path == '/players' %}class="active"{% endif %}>Игроки</a></li>
+                <li><a href="/contact" {% if request.url.path == '/contact' %}class="active"{% endif %}>Обратная связь</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {# block content — сюда каждая страница вставит своё содержимое #}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>Spike Report</p>
+        <p>email <a href="mailto:terkalov.android@mail.ru">terkalov.android@mail.ru</a></p>
+    </footer>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

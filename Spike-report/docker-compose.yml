@@ -1,0 +1,35 @@
+services:
+
+  # Сервис 1: FastAPI-приложение
+  app:
+    build: .                        # собрать образ из Dockerfile в текущей папке
+    ports:
+      - "8000:8000"                 # порт компьютера : порт внутри контейнера
+    volumes:
+      - .:/app                      # синхронизируем папку — изменения кода видны сразу
+    env_file:
+      - .env                        # читаем переменные из .env
+    depends_on:
+      db:
+        condition: service_healthy  # ждём, пока БД будет готова принимать подключения
+
+  # Сервис 2: база данных PostgreSQL
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: spike_report
+      POSTGRES_USER: spike_user
+      POSTGRES_PASSWORD: spike_password
+    ports:
+      - "5433:5432"                 # открываем порт, чтобы можно было подключиться снаружи
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # данные БД сохраняются между перезапусками
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # SQL-скрипт запустится при первом старте
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spike_user -d spike_report"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:   # именованный том для хранения данных БД

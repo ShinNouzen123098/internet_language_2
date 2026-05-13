@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article class="article-players">
+    <h2>Игроки</h2>
+
+    {# Кнопка добавления нового игрока #}
+    <a href="/players/add" class="submit-button"
+       style="display:inline-block; margin-bottom:20px; text-decoration:none;">
+        + Добавить игрока
+    </a>
+
+    {% for player in players %}
+    <div class="player">
+        <div class="player-info">
+            <h3>{{ player.name | e }}</h3>
+            <p>Амплуа: {{ player.position | e }}</p>
+            <p>Дата рождения: {{ player.birth_date.strftime('%d.%m.%Y') }}</p>
+            <p>Рост: {{ player.height }}</p>
+            <p>Команда: {{ player.team_name or 'Без команды' }}</p>
+
+            {# Кнопка редактирования — обычная ссылка #}
+            <a href="/players/{{ player.id }}/edit" class="submit-button"
+               style="display:inline-block; margin-right:10px; text-decoration:none;">
+                Редактировать
+            </a>
+
+            {# Кнопка удаления — форма с POST-запросом.
+               Удаление делается через форму а не через ссылку,
+               потому что удаление это изменение данных — оно должно
+               быть POST-запросом, а не GET. #}
+            <form action="/players/{{ player.id }}/delete"
+                  method="post" style="display:inline;">
+                <button type="submit" class="submit-button"
+                        style="background:#c0392b;"
+                        onclick="return confirm('Удалить игрока?')">
+                    Удалить
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <p>Игроков пока нет.</p>
+    {% endfor %}
+</article>
+{% endblock %}
