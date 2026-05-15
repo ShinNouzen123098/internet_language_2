@@ -1,22 +1,35 @@
-# Модель для работы с таблицей news
+# Модель соответствует таблице news.
 
-async def get_all_news(db):
-    """Получить все новости, сначала самые свежие."""
-    rows = await db.fetch("""
-        SELECT id, title, content, image_path, created_at
-        FROM news
-        ORDER BY created_at DESC
-    """)
-    return rows
+class NewsItem:
+    """Класс-модель для одной записи из таблицы news."""
+    def __init__(self, row):
+        self.id = row["id"]
+        self.title = row["title"]
+        self.content = row["content"]
+        self.image_path = row["image_path"]
+        self.created_at = row["created_at"]
 
 
-async def get_news_by_id(db, news_id: int):
-    """Получить одну новость по id."""
-    row = await db.fetchrow("""
-        SELECT id, title, content, image_path, created_at
-        FROM news
-        WHERE id = $1
-    """, news_id)
-    # $1 — это параметризованный запрос, защита от SQL-инъекций.
-    # asyncpg подставит news_id вместо $1 безопасно.
-    return row
+class NewsModel:
+    """Модель для работы с таблицей news."""
+
+    def __init__(self):
+        self.items = []  # данные хранятся внутри класса
+
+    async def load_all(self, db):
+        """Загрузить все новости в self.items."""
+        rows = await db.fetch("""
+            SELECT id, title, content, image_path, created_at
+            FROM news
+            ORDER BY created_at DESC
+        """)
+        self.items = [NewsItem(row) for row in rows]
+
+    async def load_by_id(self, db, news_id: int):
+        """Загрузить одну новость по id."""
+        row = await db.fetchrow("""
+            SELECT id, title, content, image_path, created_at
+            FROM news
+            WHERE id = $1
+        """, news_id)
+        self.items = [NewsItem(row)] if row else []

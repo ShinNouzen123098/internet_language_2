@@ -3,8 +3,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 
 from app.database import get_db, get_logger
-from app.models import players as players_model
-from app.models import teams as teams_model
+from app.models.players import PlayersModel
+from app.models.teams import TeamsModel
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -13,23 +13,23 @@ logger = get_logger("players")
 
 @router.get("/players")
 async def players_page(request: Request, db=Depends(get_db)):
-    """Страница со списком всех игроков."""
-    all_players = await players_model.get_all_players(db)
+    model = PlayersModel()
+    await model.load_all(db)
     return templates.TemplateResponse(
         request=request,
         name="players.html",
-        context={"players": all_players}
+        context={"players": model.items}
     )
 
 
 @router.get("/players/add")
 async def add_player_page(request: Request, db=Depends(get_db)):
-    """Страница с формой добавления нового игрока."""
-    all_teams = await teams_model.get_all_teams(db)
+    teams = TeamsModel()
+    await teams.load_all(db)
     return templates.TemplateResponse(
         request=request,
         name="player_form.html",
-        context={"teams": all_teams, "player": None}
+        context={"teams": teams.items, "player": None}
     )
 
 
@@ -43,13 +43,11 @@ async def add_player(
     height: int = Form(...),
     team_id: int = Form(...)
 ):
-    """Обработка формы — сохраняем нового игрока в БД."""
     name = name.strip()
     position = position.strip()
 
-    player_id = await players_model.create_player(
-        db, name, position, birth_date, height, team_id
-    )
+    model = PlayersModel()
+    player_id = await model.create(db, name, position, birth_date, height, team_id)
     logger.info(f"Создан игрок: {name}, id={player_id}")
 
     return RedirectResponse(url="/players", status_code=303)
@@ -57,13 +55,16 @@ async def add_player(
 
 @router.get("/players/{player_id}/edit")
 async def edit_player_page(player_id: int, request: Request, db=Depends(get_db)):
-    """Страница редактирования игрока."""
-    player = await players_model.get_player_by_id(db, player_id)
-    all_teams = await teams_model.get_all_teams(db)
+    model = PlayersModel()
+    await model.load_by_id(db, player_id)
+
+    teams = TeamsModel()
+    await teams.load_all(db)
+
     return templates.TemplateResponse(
         request=request,
         name="player_form.html",
-        context={"teams": all_teams, "player": player}
+        context={"teams": teams.items, "player": model.item}
     )
 
 
@@ -78,13 +79,11 @@ async def edit_player(
     height: int = Form(...),
     team_id: int = Form(...)
 ):
-    """Обработка формы редактирования."""
     name = name.strip()
     position = position.strip()
 
-    await players_model.update_player(
-        db, player_id, name, position, birth_date, height, team_id
-    )
+    model = PlayersModel()
+    await model.update(db, player_id, name, position, birth_date, height, team_id)
     logger.info(f"Обновлён игрок id={player_id}: {name}")
 
     return RedirectResponse(url="/players", status_code=303)
@@ -92,8 +91,8 @@ async def edit_player(
 
 @router.post("/players/{player_id}/delete")
 async def delete_player(player_id: int, db=Depends(get_db)):
-    """Удаление игрока."""
-    await players_model.delete_player(db, player_id)
+    model = PlayersModel()
+    await model.delete(db, player_id)
     logger.info(f"Удалён игрок id={player_id}")
 
     return RedirectResponse(url="/players", status_code=303)
