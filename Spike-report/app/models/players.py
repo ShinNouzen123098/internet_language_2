@@ -1,3 +1,6 @@
+from datetime import date
+
+
 class Player:
     """Класс-модель для одной записи из таблицы players."""
     def __init__(self, row):
@@ -15,10 +18,9 @@ class PlayersModel:
 
     def __init__(self):
         self.items = []
-        self.item = None  # для одного игрока (get by id)
+        self.item = None
 
     async def load_all(self, db):
-        """Загрузить всех игроков с названием команды через JOIN."""
         rows = await db.fetch("""
             SELECT p.id, p.name, p.position, p.birth_date, p.height,
                    p.team_id, t.name AS team_name
@@ -29,7 +31,6 @@ class PlayersModel:
         self.items = [Player(row) for row in rows]
 
     async def load_by_id(self, db, player_id: int):
-        """Загрузить одного игрока по id."""
         row = await db.fetchrow("""
             SELECT p.id, p.name, p.position, p.birth_date, p.height,
                    p.team_id, t.name AS team_name
@@ -41,26 +42,27 @@ class PlayersModel:
 
     async def create(self, db, name: str, position: str,
                      birth_date: str, height: int, team_id: int):
-        """Создать нового игрока."""
+        birth_date_obj = date.fromisoformat(birth_date)
+
         row = await db.fetchrow("""
             INSERT INTO players (name, position, birth_date, height, team_id)
             VALUES ($1, $2, $3, $4, $5)
             RETURNING id
-        """, name, position, birth_date, height, team_id)
+        """, name, position, birth_date_obj, height, team_id)
         return row["id"]
 
     async def update(self, db, player_id: int, name: str, position: str,
                      birth_date: str, height: int, team_id: int):
-        """Обновить данные игрока."""
+        birth_date_obj = date.fromisoformat(birth_date)
+
         await db.execute("""
             UPDATE players
             SET name = $1, position = $2, birth_date = $3,
                 height = $4, team_id = $5
             WHERE id = $6
-        """, name, position, birth_date, height, team_id, player_id)
+        """, name, position, birth_date_obj, height, team_id, player_id)
 
     async def delete(self, db, player_id: int):
-        """Удалить игрока."""
         await db.execute("""
             DELETE FROM players WHERE id = $1
         """, player_id)
