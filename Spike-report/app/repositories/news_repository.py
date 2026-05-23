@@ -5,11 +5,6 @@ from asyncpg import Connection
 
 
 class NewsRepository:
-    """
-    Repository — логика работы с БД для таблицы news.
-    Не хранит состояние — только принимает запрос и возвращает данные.
-    Получает db через DI в конструкторе.
-    """
 
     def __init__(self, db: Connection = Depends(get_db)):
         self.db = db
