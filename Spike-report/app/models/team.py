@@ -2,7 +2,6 @@ from pydantic import BaseModel, field_validator
 
 
 class Team(BaseModel):
-    """Модель команды — только данные и их валидация."""
     id: int
     name: str
     city: str
