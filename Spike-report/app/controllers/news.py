@@ -13,12 +13,6 @@ async def news_page(
     request: Request,
     repo: NewsRepository = Depends(NewsRepository)
 ):
-    """
-    Теперь Repository приходит через DI — FastAPI сам создаёт
-    NewsRepository и передаёт его в функцию. NewsRepository в свою
-    очередь сам получает db через свой Depends(get_db).
-    Цепочка DI: get_db → NewsRepository → news_page
-    """
     news_list = await repo.get_all()
     return templates.TemplateResponse(
         request=request,
