@@ -3,11 +3,6 @@ from pydantic import BaseModel, EmailStr, field_validator
 
 
 class Contact(BaseModel):
-    """
-    Модель обратной связи.
-    EmailStr — Pydantic автоматически проверяет формат email.
-    Для этого нужно установить: pip install pydantic[email]
-    """
     id: int
     name: str
     email: EmailStr
