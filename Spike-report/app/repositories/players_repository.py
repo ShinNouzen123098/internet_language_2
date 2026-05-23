@@ -6,7 +6,6 @@ from asyncpg import Connection
 
 
 class PlayersRepository:
-    """Repository для таблицы players. Не хранит состояние."""
 
     def __init__(self, db: Connection = Depends(get_db)):
         self.db = db
