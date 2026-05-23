@@ -1,35 +1,31 @@
-# Модель соответствует таблице news.
-
-class NewsItem:
-    """Класс-модель для одной записи из таблицы news."""
-    def __init__(self, row):
-        self.id = row["id"]
-        self.title = row["title"]
-        self.content = row["content"]
-        self.image_path = row["image_path"]
-        self.created_at = row["created_at"]
+from datetime import datetime
+from pydantic import BaseModel, field_validator
+from typing import Optional
 
 
-class NewsModel:
-    """Модель для работы с таблицей news."""
+class NewsItem(BaseModel):
+    """
+    Модель — только описание данных, никакой логики БД.
+    Pydantic автоматически валидирует поля при создании объекта.
+    """
+    id: int
+    title: str
+    content: str
+    image_path: Optional[str] = None
+    created_at: datetime
 
-    def __init__(self):
-        self.items = []  # данные хранятся внутри класса
+    @field_validator("title")
+    @classmethod
+    def title_not_empty(cls, v):
+        if not v.strip():
+            raise ValueError("Заголовок не может быть пустым")
+        return v.strip()
 
-    async def load_all(self, db):
-        """Загрузить все новости в self.items."""
-        rows = await db.fetch("""
-            SELECT id, title, content, image_path, created_at
-            FROM news
-            ORDER BY created_at DESC
-        """)
-        self.items = [NewsItem(row) for row in rows]
+    @field_validator("content")
+    @classmethod
+    def content_not_empty(cls, v):
+        if not v.strip():
+            raise ValueError("Содержимое не может быть пустым")
+        return v.strip()
 
-    async def load_by_id(self, db, news_id: int):
-        """Загрузить одну новость по id."""
-        row = await db.fetchrow("""
-            SELECT id, title, content, image_path, created_at
-            FROM news
-            WHERE id = $1
-        """, news_id)
-        self.items = [NewsItem(row)] if row else []
+    model_config = {"from_attributes": True}

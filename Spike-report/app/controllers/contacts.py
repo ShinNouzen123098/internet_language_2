@@ -2,8 +2,8 @@ from fastapi import APIRouter, Request, Depends, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 
-from app.database import get_db, get_logger
-from app.models.contacts import ContactsModel
+from app.database import get_logger
+from app.repositories.contacts_repository import ContactsRepository
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -22,7 +22,7 @@ async def contact_page(request: Request, sent: str = None):
 @router.post("/contact")
 async def send_contact(
     request: Request,
-    db=Depends(get_db),
+    repo: ContactsRepository = Depends(ContactsRepository),
     name: str = Form(...),
     email: str = Form(...),
     message: str = Form(...)
@@ -31,8 +31,6 @@ async def send_contact(
     email = email.strip()
     message = message.strip()
 
-    model = ContactsModel()
-    await model.create(db, name, email, message)
+    await repo.create(name, email, message)
     logger.info(f"Новое сообщение от: {name} ({email})")
-
     return RedirectResponse(url="/contact?sent=ok", status_code=303)
