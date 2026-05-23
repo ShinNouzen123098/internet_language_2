@@ -4,7 +4,6 @@ from typing import Optional
 
 
 class Player(BaseModel):
-    """Модель игрока — только данные и их валидация."""
     id: int
     name: str
     position: str
