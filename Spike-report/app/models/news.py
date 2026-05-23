@@ -4,10 +4,6 @@ from typing import Optional
 
 
 class NewsItem(BaseModel):
-    """
-    Модель — только описание данных, никакой логики БД.
-    Pydantic автоматически валидирует поля при создании объекта.
-    """
     id: int
     title: str
     content: str
